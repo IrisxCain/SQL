@@ -39,3 +39,8 @@ FROM superstore;
 SELECT avg(price)
 FROM superstore
 WHERE category="Kitchen Supplies";
+
+#Show a statistic about the price for items in all categories
+SELECT AVG(price), category
+FROM superstore
+GROUP BY category;
