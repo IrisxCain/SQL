@@ -1,0 +1,76 @@
+#In this SQL code, I'm querying a database that's holding Chinook data to answer questions about the data. 
+
+# List the most recent invoice number and invoice date for each company in the US from Q1 2009, as well as their current total amount spent so far in Q1 2009.
+
+WITH InvoiceSummary AS (
+SELECT 
+c.Company,
+i.InvoiceId,
+i.InvoiceDate,
+ii.UnitPrice * ii.Quantity AS InvoiceTotal
+FROM 
+customers c
+JOIN 
+invoices i ON c.CustomerId = i.CustomerId
+JOIN 
+invoice_items ii ON i.InvoiceId = ii.InvoiceId
+WHERE 
+c.Country = 'USA' AND 
+strftime('%Y', i.InvoiceDate) = '2009' AND
+strftime('%m', i.InvoiceDate) BETWEEN '01' AND '03'
+),
+TotalSpent AS (
+SELECT
+Company,
+SUM(InvoiceTotal) AS TotalSpent
+FROM
+InvoiceSummary
+GROUP BY
+Company
+),
+RankedInvoices AS (
+SELECT 
+InvSum.Company,
+InvSum.InvoiceId,
+InvSum.InvoiceDate,
+TS.TotalSpent,
+ROW_NUMBER() OVER (PARTITION BY InvSum.Company ORDER BY InvSum.InvoiceDate DESC) AS rn
+FROM 
+InvoiceSummary InvSum
+JOIN
+TotalSpent TS ON InvSum.Company = TS.Company
+)
+SELECT 
+Company,
+InvoiceId AS "Most Recent Invoice Number",
+InvoiceDate AS "Invoice Date",
+TotalSpent AS "Total Amount Spent"
+FROM 
+RankedInvoices
+WHERE 
+rn = 1;
+
+#Show customers (their full names, customer ID) and label all customers in the US as "Domestic" and customers outside of the US as "International"
+
+SELECT 
+FirstName, 
+LastName,
+CustomerId, 
+CASE
+WHEN Country = 'USA' THEN 'Domestic'
+ELSE 'International'
+END AS Customer_Location_Type
+FROM 
+customers;
+
+#Show only the Customers from Brazil.
+
+SELECT 
+FirstName, 
+LastName,
+CustomerId
+FROM customers
+WHERE Country="Brazil"
+
+
+
