@@ -12,8 +12,7 @@ FROM customers c
 JOIN invoices i ON c.CustomerId = i.CustomerId
 JOIN invoice_items ii ON i.InvoiceId = ii.InvoiceId
 WHERE c.Country = 'USA' 
-AND strftime('%Y', i.InvoiceDate) = '2009' 
-AND strftime('%m', i.InvoiceDate) BETWEEN '01' AND '03'
+AND i.InvoiceDate >= '2009-01-01' AND i.InvoiceDate < '2009-04-01'
 ),
 TotalSpent AS (
 SELECT Company, SUM(InvoiceTotal) AS TotalSpent
